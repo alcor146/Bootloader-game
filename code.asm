@@ -6,37 +6,35 @@ org 7C00h
 start:
     jmp main
 
-; variabile de stare
-ball_x db 0            
+;ball that moves on the X axis only     
+ball_x db 0       
 ball_y db 15        
 ball_dx db 1   
 
-
-; ball1_x db 30            
-; ball1_y db 7        
-; ball1_dx db 1   
-
-paddle_x db 75          
+; the player that needs to reach the gate
+paddle_x db 75   
 paddle_y db 20  
 paddle_dx db 0          
 paddle_dy db 0 
 
+; after 3 cycles (when it reqaches the other end of the screens and resets) the game will end
 timer_x db 1
-time_limit db 0
+; I keep count of the number of cycles
+time_limit db 0 
 
 
 main:
     
-    ; initializare cs, ds
+    ; initialization
     mov ax, cs
     mov ds, ax
 
-    ; ascunde cursorul
+    ; hide he cursor
     mov ch, 32
     mov ah, 1
     int 10h         ;  INT 10h / AH = 01h - set text-mode cursor shape.
 
-  
+    ;clear the screen
     mov cx, 25
 cls:
     mov ah, 0Eh
@@ -52,7 +50,6 @@ game:
     
     call ball_draw
     sub ball_y, 10
-    ;add ball_x, 30
     call ball_draw
     
     call paddle_draw
@@ -66,7 +63,6 @@ game:
   
     call check_collision
     add ball_y, 10
-    ;sub ball_x, 30
     call check_collision
     
     call delay
@@ -74,10 +70,9 @@ game:
   
     call ball_erase
     sub ball_y, 10
-    ;add ball_x, 30
     call ball_erase
     add ball_y, 10
-    ;sub ball_x, 30
+
     
     call paddle_erase
     add paddle_y, 1
@@ -114,31 +109,17 @@ check_collision proc
     .if (al == ball_x) && (bl == ball_y)   
         jmp Ending
     .endif
-    ; .if (al == ball1_x) && (bl == ball1_y)   
-    ;     jmp Ending
-    ; .endif
+
     add bl, 1
     .if (al == ball_x) && (bl == ball_y)
         jmp Ending
     .endif
-    ; .if (al == ball1_x) && (bl == ball1_y)
-    ;     jmp Ending
-    ; .endif
     sub bl, 1
-    ; add al, 1
-    ; .if (al == ball_x) && (bl == ball_y)
-    ;     jmp Ending
-    ; .endif
-    ; sub bl, 1
-    ; .if (al == ball_x) && (bl == ball_y)
-    ;     jmp Ending
-    ; .endif
-    ; sub al, 1
     
 check_collision endp
 
 
-; aceasta rutina determina numarul de cadre pe secunda
+; number of fps
 delay proc
     mov ah, 086h
     mov cx, 0
@@ -147,6 +128,7 @@ delay proc
     ret
 delay endp
 
+;set the new position of the ball
 ball_setpos proc
     mov dl, ball_x
     mov dh, ball_y
@@ -156,7 +138,7 @@ ball_setpos proc
     ret
 ball_setpos endp
 
-
+;draw the ball at the new position
 ball_draw proc
     call ball_setpos
     mov ah, 0Ah
@@ -166,7 +148,7 @@ ball_draw proc
     ret
 ball_draw endp
 
-
+;clear the screen at the previous position of the ball
 ball_erase proc
     call ball_setpos
     mov ah, 0Ah
@@ -176,7 +158,7 @@ ball_erase proc
     ret
 ball_erase endp
 
-
+;calculating the new  position of the ball
 ball_move proc
     mov al, ball_x
     mov bl, ball_dx
@@ -189,50 +171,6 @@ ball_move proc
     
     ret
 ball_move endp
-
-; ball1_setpos proc
-;     mov dl, ball1_x
-;     mov dh, ball1_y
-;     mov bh, 0
-;     mov ah, 2
-;     int 10h         ; 
-;     ret
-; ball1_setpos endp
-
-
-; ball1_draw proc
-;     call ball1_setpos
-;     mov ah, 0Ah
-;     mov al, 'O'
-;     mov cx, 1
-;     int 10h         
-;     ret
-; ball1_draw endp
-
-
-; ball1_erase proc
-;     call ball1_setpos
-;     mov ah, 0Ah
-;     mov al, ' '
-;     mov cx, 1
-;     int 10h        
-;     ret
-; ball1_erase endp
-
-
-; ball1_move proc
-;     mov al, ball1_x
-;     mov bl, ball1_dx
-;     add al, bl
-;     mov ball1_x, al
-
-;     .if (al == 79) || (al == 0)
-;         neg ball1_dx
-;     .endif
-    
-;     ret
-; ball1_move endp
-
 
 
 paddle_setpos proc
@@ -315,7 +253,7 @@ no_key:
 paddle_move endp
 
 
-
+;the gate is the goal that the playes has to reach to win
 gate_setpos proc
     mov dl, 0
     mov dh, 0
@@ -335,6 +273,7 @@ gate_draw proc
     ret
 gate_draw endp
 
+;the wall is the timer itself
 wall_setpos proc
     mov dl, 0
     mov dh, 24
@@ -370,23 +309,7 @@ wall_erase endp
 
 
 Ending:
-;     mov cx, 25
-; erase:
-;     mov ah, 0Eh
-;     mov al, 10
-;     int 10h         
-;     loop erase
-    
-    ; mov AX, 0B800h
-    ; push AX
-    ; pop DS
-    ; mov [660h], 'G'
-    ; mov [662h], 'O'
-    ; hlt
-    
-
-    
-; semnatura pentru bootloader
+;   bootloader signature
 db 510-($-start) dup(0)
 dw 0AA55h
 
